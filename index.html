@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fitness Challenge Tracker — Live (Firestore only)</title>
+
+    <!-- Firebase (compat builds for simplicity) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #111827;
+        --muted: #94a3b8;
+        --text: #e5e7eb;
+        --accent: #22c55e;
+        --border: #1f2937;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto,
+          "Helvetica Neue", Arial;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 32px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin: 0 0 12px;
+      }
+      p.sub {
+        color: var(--muted);
+        margin: 0 0 18px;
+        font-size: 0.9rem;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+      }
+
+      .form-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .form-grid input[type="text"],
+      .form-grid input[type="number"],
+      .form-grid input[type="file"] {
+        flex: 1 1 120px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #0b1220;
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      button {
+        border: 1px solid var(--border);
+        background: #0b1220;
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: #16a34a;
+        color: #041207;
+        font-weight: 600;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 8px;
+        text-align: center;
+      }
+      thead th {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      img.avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        object-fit: cover;
+        border: 1px solid var(--border);
+      }
+      tr.top1 {
+        background: rgba(250, 204, 21, 0.12);
+      }
+      tr.top2 {
+        background: rgba(156, 163, 175, 0.12);
+      }
+      tr.top3 {
+        background: rgba(205, 127, 50, 0.12);
+      }
+
+      .note {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      .error {
+        color: #fca5a5;
+      }
+      .success {
+        color: #86efac;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>5 Weeks Challenge 🏋️ Fitness Challenge Tracker (Live)</h1>
+      <p class="sub">
+        Add <strong>Name</strong>, <strong>Start</strong>,
+        <strong>Current</strong>, <strong>Goal</strong>, and an optional small
+        <strong>Photo</strong>. Leaderboard sorts by weight lost.
+      </p>
+
+      <div class="card">
+        <div class="form-grid">
+          <input id="name" type="text" placeholder="Name" />
+          <input id="start" type="number" placeholder="Starting" step="0.1" />
+          <input id="current" type="number" placeholder="Current" step="0.1" />
+          <input id="goal" type="number" placeholder="Goal" step="0.1" />
+          <input id="photo" type="file" accept="image/*" />
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="addBtn">Add / Update</button>
+          <button class="secondary" id="resetBtn">Reset All</button>
+          <button class="secondary" id="exportBtn">Export CSV</button>
+        </div>
+
+        <p id="msg" class="note"></p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Name</th>
+              <th>Start</th>
+              <th>Current</th>
+              <th>Goal</th>
+              <th>Lost</th>
+              <th>% to Goal</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+
+        <p class="note">
+          Tip: Use short names and small photos. Images are stored as text
+          (Base64) in Firestore; each document should stay under ~1 MB.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDHnlcNDXx9ptnkNZvpppnxBoob3-411E0",
+        authDomain: "weekschallengeapp.firebaseapp.com",
+        projectId: "weekschallengeapp",
+        storageBucket: "weekschallengeapp.appspot.com", // ✅ fixed
+        messagingSenderId: "1001371655859",
+        appId: "1:1001371655859:web:437a47d7bf3765e7179ac6",
+        // measurementId: "G-Z8Y6DH35VX" // optional, only if you add analytics-compat
+      };
+
+      // Initialize Firebase (compat)
+      firebase.initializeApp(firebaseConfig);
+      /* ============================================================================================ */
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const participantsRef = db.collection("participants");
+
+      const msgEl = document.getElementById("msg");
+      function showMsg(text, kind = "info") {
+        msgEl.textContent = text;
+        msgEl.className =
+          "note " +
+          (kind === "error" ? "error" : kind === "success" ? "success" : "");
+      }
+
+      // Clear input fields after save/reset
+      function clearInputs() {
+        document.getElementById("name").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("current").value = "";
+        document.getElementById("goal").value = "";
+        document.getElementById("photo").value = "";
+      }
+
+      function fileToSmallDataURL(file, maxSize = 160, quality = 0.75) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            img.src = e.target.result;
+          };
+          reader.onerror = reject;
+          img.onload = () => {
+            const scale = Math.min(
+              maxSize / img.width,
+              maxSize / img.height,
+              1
+            );
+            const w = Math.round(img.width * scale);
+            const h = Math.round(img.height * scale);
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            try {
+              const dataURL = canvas.toDataURL("image/jpeg", quality);
+              resolve(dataURL);
+            } catch (e) {
+              reject(e);
+            }
+          };
+          img.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      document.getElementById("addBtn").addEventListener("click", addOrUpdate);
+      async function addOrUpdate() {
+        const name = document.getElementById("name").value.trim();
+        const start = parseFloat(document.getElementById("start").value);
+        const current = parseFloat(document.getElementById("current").value);
+        const goal = parseFloat(document.getElementById("goal").value);
+        const photoInput = document.getElementById("photo");
+
+        if (!name || isNaN(start) || isNaN(current) || isNaN(goal)) {
+          showMsg("Please fill Name, Start, Current, Goal correctly.", "error");
+          return;
+        }
+
+        showMsg("Saving…");
+
+        try {
+          let photoDataUrl = null;
+          if (photoInput.files && photoInput.files[0]) {
+            try {
+              photoDataUrl = await fileToSmallDataURL(
+                photoInput.files[0],
+                160,
+                0.75
+              );
+            } catch (e) {
+              console.warn(
+                "Photo compression failed; proceeding without photo.",
+                e
+              );
+            }
+          }
+
+          await participantsRef
+            .doc(name)
+            .set(
+              {
+                start,
+                current,
+                goal,
+                ...(photoDataUrl ? { photo: photoDataUrl } : {}),
+              },
+              { merge: true }
+            );
+
+          showMsg("Saved!", "success");
+          clearInputs(); // clear after save
+        } catch (err) {
+          console.error(err);
+          showMsg(
+            "Error saving participant: " + (err.message || err.code || err),
+            "error"
+          );
+        }
+      }
+
+      document.getElementById("resetBtn").addEventListener("click", resetAll);
+      async function resetAll() {
+        if (!confirm("Are you sure you want to delete ALL participants?"))
+          return;
+        try {
+          const snap = await participantsRef.get();
+          const batch = db.batch();
+          snap.forEach((doc) => batch.delete(doc.ref));
+          await batch.commit();
+          clearInputs();
+          showMsg("All data cleared.", "success");
+        } catch (err) {
+          console.error(err);
+          showMsg("Reset error: " + (err.message || err.code || err), "error");
+        }
+      }
+
+      const tbody = document.getElementById("tbody");
+      let latestData = [];
+      function renderTable(list) {
+        tbody.innerHTML = "";
+        list.sort((a, b) => b.start - b.current - (a.start - a.current));
+        list.forEach((p, idx) => {
+          const lost = (p.start ?? 0) - (p.current ?? 0);
+          const totalToGoal = (p.start ?? 0) - (p.goal ?? 0);
+          const pct =
+            totalToGoal > 0 ? ((lost / totalToGoal) * 100).toFixed(1) : "0.0";
+          const tr = document.createElement("tr");
+          if (idx === 0) tr.className = "top1";
+          else if (idx === 1) tr.className = "top2";
+          else if (idx === 2) tr.className = "top3";
+          tr.innerHTML = `
+          <td>${
+            p.photo ? `<img class="avatar" src="${p.photo}" alt="photo" />` : ""
+          }</td>
+          <td>${p.name}</td>
+          <td>${p.start ?? ""}</td>
+          <td>${p.current ?? ""}</td>
+          <td>${p.goal ?? ""}</td>
+          <td>${lost.toFixed ? lost.toFixed(1) : lost}</td>
+          <td>${pct}%</td>
+        `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      participantsRef.onSnapshot(
+        (snapshot) => {
+          const list = [];
+          snapshot.forEach((doc) => list.push({ name: doc.id, ...doc.data() }));
+          latestData = list;
+          renderTable(list);
+        },
+        (err) => {
+          console.error("Realtime error:", err);
+          showMsg(
+            "Realtime error: " + (err.message || err.code || err),
+            "error"
+          );
+        }
+      );
+
+      document.getElementById("exportBtn").addEventListener("click", () => {
+        if (!latestData.length) {
+          showMsg("No data to export.", "error");
+          return;
+        }
+        let csv = "Name,Start,Current,Goal,Lost,% to Goal\n";
+        latestData.forEach((p) => {
+          const lost = (p.start ?? 0) - (p.current ?? 0);
+          const totalToGoal = (p.start ?? 0) - (p.goal ?? 0);
+          const pct =
+            totalToGoal > 0 ? ((lost / totalToGoal) * 100).toFixed(1) : "0.0";
+          csv += `${p.name},${p.start ?? ""},${p.current ?? ""},${
+            p.goal ?? ""
+          },${lost},${pct}%\n`;
+        });
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "fitness-challenge.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+        showMsg("CSV exported!", "success");
+      });
+
+      // Quick debug helper:
+      // console.log(firebase.app().options.projectId);
+    </script>
+  </body>
+</html>
