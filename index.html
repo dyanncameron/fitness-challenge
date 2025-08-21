@@ -10,82 +10,97 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
-      :root{
-        --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb;
-        --accent:#22c55e; --border:#1f2937;
+      :root {
+        --bg: #0f172a;
+        --card: #111827;
+        --muted: #94a3b8;
+        --text: #e5e7eb;
+        --accent: #22c55e;
+        --border: #1f2937;
       }
-      *{box-sizing:border-box}
-      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:0;background:var(--bg);color:var(--text)}
-      .wrap{max-width:720px;margin:32px auto;padding:0 16px}
-      h1{font-size:1.4rem;margin:0 0 12px}
-      p.sub{color:var(--muted);margin:0 0 18px;font-size:.9rem}
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap { max-width: 720px; margin: 32px auto; padding: 0 16px; }
+      h1 { font-size: 1.4rem; margin: 0 0 12px; }
+      p.sub { color: var(--muted); margin: 0 0 18px; font-size: 0.9rem; }
+      .card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 12px; padding: 16px;
+      }
 
-      .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
-
-      .form-grid{display:flex;flex-wrap:wrap;gap:8px}
+      .form-grid { display: flex; flex-wrap: wrap; gap: 8px; }
       .form-grid input[type="text"],
       .form-grid input[type="number"],
-      .form-grid input[type="file"]{
-        flex:1 1 120px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);
-        background:#0b1220;color:var(--text);font-size:.9rem;
+      .form-grid input[type="file"] {
+        flex: 1 1 120px; padding: 8px 10px; border-radius: 8px;
+        border: 1px solid var(--border); background: #0b1220; color: var(--text);
+        font-size: 0.9rem;
       }
 
-      .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-      button{border:1px solid var(--border);background:#0b1220;color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.9rem}
-      button.primary{background:var(--accent);border-color:#16a34a;color:#041207;font-weight:600}
+      .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+      button {
+        border: 1px solid var(--border); background: #0b1220; color: var(--text);
+        padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;
+      }
+      button.primary {
+        background: var(--accent); border-color: #16a34a;
+        color: #041207; font-weight: 600;
+      }
 
-      /* ===== Clean / professional table styling ===== */
-      .table-container{margin-top:16px}
-      table{width:100%;border-collapse:collapse;font-size:.9rem}
-      thead{background:#1e293b;color:#e5e7eb;text-transform:uppercase;letter-spacing:.5px}
-      thead th{padding:12px 10px;border-bottom:2px solid #334155}
-      th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:8px;vertical-align:middle}
-      tbody tr:nth-child(odd){background:#0f172a}
-      tbody tr:nth-child(even){background:#111827}
-      tbody tr:hover{background:#1e293b;transition:background .2s ease}
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.9rem; }
+      th, td { border-bottom: 1px solid var(--border); padding: 8px; text-align: center; }
+      thead th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
 
-      /* Subtle top-3 tints */
-      tr.top1{background:rgba(34,197,94,.15)}
-      tr.top2{background:rgba(148,163,184,.15)}
-      tr.top3{background:rgba(245,158,11,.15)}
+      img.avatar { width: 36px; height: 36px; border-radius: 6px;
+        object-fit: cover; border: 1px solid var(--border); }
+      tr.top1 { background: rgba(250, 204, 21, 0.12); }
+      tr.top2 { background: rgba(156, 163, 175, 0.12); }
+      tr.top3 { background: rgba(205, 127, 50, 0.12); }
 
-      /* Numbers right-aligned from col 3+ */
-      td:nth-child(n+3), th:nth-child(n+3){text-align:right}
+      .note { font-size: 0.8rem; color: var(--muted); margin-top: 10px; }
+      .error { color: #fca5a5; }
+      .success { color: #86efac; }
 
-      /* Name ellipsis */
-      td:nth-child(2), th:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-      /* Photo */
-      img.avatar{width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid #334155}
-
-      /* Notes / status */
-      .note{font-size:.8rem;color:var(--muted);margin-top:10px}
-      .error{color:#fca5a5}.success{color:#86efac}
-
-      /* ===== Mobile enhancements ===== */
+      /* ✅ Responsive mobile view */
       @media (max-width:600px){
-        .table-container{
-          overflow-x:auto; display:block; -webkit-overflow-scrolling:touch;
-          border-radius:8px;
+        thead{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+        table, thead, tbody, th, td, tr{ display:block; width:100% }
+        tbody tr{
+          background:#1f2937; border:1px solid #334155;
+          border-radius:10px; padding:10px 10px 6px; margin:12px 0;
         }
-        table{min-width:640px;} /* allow scrolling instead of squishing */
-        table, thead, tbody, th, td, tr{font-size:14px}
-        th,td{padding:6px}
-        img.avatar{width:32px;height:32px;border-radius:6px}
-        .actions button{width:100%}
-        /* Keep your earlier mobile hide rule if you like; optional now because of scroll */
-        /* td:nth-child(5),th:nth-child(5),
-           td:nth-child(7),th:nth-child(7){display:none} */
+        td{
+          border:0; padding:8px 6px; display:flex;
+          justify-content:space-between; align-items:center; gap:12px;
+        }
+        td::before{
+          content:attr(data-label);
+          color:#94a3b8; font-weight:600; margin-right:12px;
+        }
+
+        /* ✅ Center photo row */
+        td.photo{
+          justify-content:center;
+          margin-bottom:8px;
+        }
+        td.photo::before{ content:"" }
+        img.avatar{
+          width:64px; height:64px; border-radius:50%; display:block;
+        }
+
+        .actions button{ width:100% }
       }
     </style>
   </head>
   <body>
     <div class="wrap">
       <h1>5 Weeks Challenge 🏋️ Fitness Challenge Tracker (Live)</h1>
-      <p class="sub">
-        Add <strong>Name</strong>, <strong>Start</strong>, <strong>Current</strong>, <strong>Goal</strong>, and an optional small
-        <strong>Photo</strong>. Leaderboard sorts by <strong>% to Goal</strong> (works for gaining or losing).
-      </p>
+      <p class="sub">Add <strong>Name</strong>, <strong>Start</strong>, <strong>Current</strong>, <strong>Goal</strong>, and an optional small <strong>Photo</strong>. Leaderboard sorts by weight lost.</p>
 
       <div class="card">
         <div class="form-grid">
@@ -104,210 +119,154 @@
 
         <p id="msg" class="note"></p>
 
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Photo</th>
-                <th>Name</th>
-                <th>Start</th>
-                <th>Current</th>
-                <th>Goal</th>
-                <th>Change</th><!-- was: Lost -->
-                <th>% to Goal</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Name</th>
+              <th>Start</th>
+              <th>Current</th>
+              <th>Goal</th>
+              <th>Lost</th>
+              <th>% to Goal</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
 
-        <p class="note">
-          Tip: Use short names and small photos. Images are stored as text (Base64) in Firestore; each document should stay under ~1 MB.
-        </p>
+        <p class="note">Tip: Use short names and small photos. Images are stored as text (Base64) in Firestore; each document should stay under ~1 MB.</p>
       </div>
     </div>
 
     <script>
-      /* ===================== Firebase ===================== */
       const firebaseConfig = {
         apiKey: "AIzaSyDHnlcNDXx9ptnkNZvpppnxBoob3-411E0",
         authDomain: "weekschallengeapp.firebaseapp.com",
         projectId: "weekschallengeapp",
         storageBucket: "weekschallengeapp.appspot.com",
         messagingSenderId: "1001371655859",
-        appId: "1:1001371655859:web:437a47d7bf3765e7179ac6"
+        appId: "1:1001371655859:web:437a47d7bf3765e7179ac6",
       };
 
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
       const participantsRef = db.collection("participants");
 
-      /* ===================== UI helpers ===================== */
       const msgEl = document.getElementById("msg");
       function showMsg(text, kind = "info") {
         msgEl.textContent = text;
-        msgEl.className = "note " + (kind === "error" ? "error" : kind === "success" ? "success" : "");
+        msgEl.className = "note " + (kind==="error"?"error":kind==="success"?"success":"");
       }
 
-      function clearInputs() {
-        document.getElementById("name").value = "";
-        document.getElementById("start").value = "";
-        document.getElementById("current").value = "";
-        document.getElementById("goal").value = "";
-        document.getElementById("photo").value = "";
+      function clearInputs(){
+        document.getElementById("name").value="";
+        document.getElementById("start").value="";
+        document.getElementById("current").value="";
+        document.getElementById("goal").value="";
+        document.getElementById("photo").value="";
       }
 
-      // Resize image to a small Base64 to keep docs light
-      function fileToSmallDataURL(file, maxSize = 160, quality = 0.75) {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          const reader = new FileReader();
-          reader.onload = (e) => { img.src = e.target.result; };
-          reader.onerror = reject;
-          img.onload = () => {
-            const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
-            const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-            const canvas = document.createElement("canvas");
-            canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, w, h);
-            try { resolve(canvas.toDataURL("image/jpeg", quality)); }
-            catch (e) { reject(e); }
+      function fileToSmallDataURL(file, maxSize=160, quality=0.75){
+        return new Promise((resolve, reject)=>{
+          const img=new Image(); const reader=new FileReader();
+          reader.onload=(e)=>{ img.src=e.target.result; };
+          reader.onerror=reject;
+          img.onload=()=>{
+            const scale=Math.min(maxSize/img.width, maxSize/img.height, 1);
+            const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+            const canvas=document.createElement("canvas");
+            canvas.width=w; canvas.height=h;
+            const ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0,w,h);
+            try{ resolve(canvas.toDataURL("image/jpeg", quality)); }
+            catch(e){ reject(e); }
           };
-          img.onerror = reject;
-          reader.readAsDataURL(file);
+          img.onerror=reject; reader.readAsDataURL(file);
         });
       }
 
-      /* ===================== Add/Update ===================== */
       document.getElementById("addBtn").addEventListener("click", addOrUpdate);
-      async function addOrUpdate() {
-        const name = document.getElementById("name").value.trim();
-        const start = parseFloat(document.getElementById("start").value);
-        const current = parseFloat(document.getElementById("current").value);
-        const goal = parseFloat(document.getElementById("goal").value);
-        const photoInput = document.getElementById("photo");
+      async function addOrUpdate(){
+        const name=document.getElementById("name").value.trim();
+        const start=parseFloat(document.getElementById("start").value);
+        const current=parseFloat(document.getElementById("current").value);
+        const goal=parseFloat(document.getElementById("goal").value);
+        const photoInput=document.getElementById("photo");
 
-        if (!name || isNaN(start) || isNaN(current) || isNaN(goal)) {
-          showMsg("Please fill Name, Start, Current, Goal correctly.", "error");
+        if(!name||isNaN(start)||isNaN(current)||isNaN(goal)){
+          showMsg("Please fill Name, Start, Current, Goal correctly.","error");
           return;
         }
-
         showMsg("Saving…");
 
-        try {
-          let photoDataUrl = null;
-          if (photoInput.files && photoInput.files[0]) {
-            try { photoDataUrl = await fileToSmallDataURL(photoInput.files[0], 160, 0.75); }
-            catch (e) { console.warn("Photo compression failed; proceeding without photo.", e); }
+        try{
+          let photoDataUrl=null;
+          if(photoInput.files&&photoInput.files[0]){
+            try{ photoDataUrl=await fileToSmallDataURL(photoInput.files[0],160,0.75); }
+            catch(e){ console.warn("Photo compression failed",e); }
           }
 
           await participantsRef.doc(name).set(
-            { start, current, goal, ...(photoDataUrl ? { photo: photoDataUrl } : {}) },
-            { merge: true }
+            {start,current,goal, ...(photoDataUrl?{photo:photoDataUrl}:{})},
+            {merge:true}
           );
 
-          showMsg("Saved!", "success");
-          clearInputs();
-        } catch (err) {
-          console.error(err);
-          showMsg("Error saving participant: " + (err.message || err.code || err), "error");
-        }
+          showMsg("Saved!","success"); clearInputs();
+        }catch(err){ console.error(err); showMsg("Error: "+(err.message||err),"error"); }
       }
 
-      /* ===================== Reset All ===================== */
       document.getElementById("resetBtn").addEventListener("click", resetAll);
-      async function resetAll() {
-        if (!confirm("Are you sure you want to delete ALL participants?")) return;
-        try {
-          const snap = await participantsRef.get();
-          const batch = db.batch();
-          snap.forEach((doc) => batch.delete(doc.ref));
-          await batch.commit();
-          clearInputs();
-          showMsg("All data cleared.", "success");
-        } catch (err) {
-          console.error(err);
-          showMsg("Reset error: " + (err.message || err.code || err), "error");
-        }
+      async function resetAll(){
+        if(!confirm("Are you sure you want to delete ALL participants?")) return;
+        try{
+          const snap=await participantsRef.get(); const batch=db.batch();
+          snap.forEach(doc=>batch.delete(doc.ref)); await batch.commit();
+          clearInputs(); showMsg("All data cleared.","success");
+        }catch(err){ console.error(err); showMsg("Reset error: "+(err.message||err),"error"); }
       }
 
-      /* ===== Universal progress (works for gainers & losers) ===== */
-      function calcProgress(start, current, goal) {
-        const s = Number(start) || 0;
-        const c = Number(current) || 0;
-        const g = Number(goal) || 0;
-
-        const change = +(c - s).toFixed(1);            // +gain / -loss
-        const totalNeeded = Math.abs(g - s);
-        const progress = Math.min(Math.abs(c - s), totalNeeded);
-        const percentToGoal = totalNeeded > 0 ? +((progress / totalNeeded) * 100).toFixed(1) : 0;
-
-        return { change, percentToGoal };
-      }
-
-      /* ===================== Render & Realtime ===================== */
-      const tbody = document.getElementById("tbody");
-      let latestData = [];
-
-      function renderTable(list) {
-        // Sort by % to Goal (desc)
-        const sorted = [...list].sort((a, b) => {
-          const A = calcProgress(a.start, a.current, a.goal).percentToGoal;
-          const B = calcProgress(b.start, b.current, b.goal).percentToGoal;
-          return B - A;
-        });
-
-        tbody.innerHTML = "";
-        sorted.forEach((p, idx) => {
-          const { change, percentToGoal } = calcProgress(p.start, p.current, p.goal);
-          const tr = document.createElement("tr");
-          if (idx === 0) tr.className = "top1";
-          else if (idx === 1) tr.className = "top2";
-          else if (idx === 2) tr.className = "top3";
-
-          tr.innerHTML = `
-            <td>${p.photo ? `<img class="avatar" src="${p.photo}" alt="${p.name}" />` : ""}</td>
-            <td>${p.name}</td>
-            <td>${p.start ?? ""}</td>
-            <td>${p.current ?? ""}</td>
-            <td>${p.goal ?? ""}</td>
-            <td>${change > 0 ? "+" + change : change}</td>
-            <td>${percentToGoal}%</td>
+      const tbody=document.getElementById("tbody"); let latestData=[];
+      function renderTable(list){
+        tbody.innerHTML="";
+        list.sort((a,b)=> (b.start-b.current) - (a.start-a.current));
+        list.forEach((p,idx)=>{
+          const lost=(p.start??0)-(p.current??0);
+          const totalToGoal=(p.start??0)-(p.goal??0);
+          const pct=totalToGoal>0?((lost/totalToGoal)*100).toFixed(1):"0.0";
+          const tr=document.createElement("tr");
+          if(idx===0) tr.className="top1";
+          else if(idx===1) tr.className="top2";
+          else if(idx===2) tr.className="top3";
+          tr.innerHTML=`
+            <td class="photo">${p.photo?`<img class="avatar" src="${p.photo}" alt="photo" />`:""}</td>
+            <td data-label="Name">${p.name}</td>
+            <td data-label="Start">${p.start??""}</td>
+            <td data-label="Current">${p.current??""}</td>
+            <td data-label="Goal">${p.goal??""}</td>
+            <td data-label="Lost">${lost.toFixed?lost.toFixed(1):lost}</td>
+            <td data-label="% to Goal">${pct}%</td>
           `;
           tbody.appendChild(tr);
         });
       }
 
-      participantsRef.onSnapshot(
-        (snapshot) => {
-          const list = [];
-          snapshot.forEach((doc) => list.push({ name: doc.id, ...doc.data() }));
-          latestData = list;
-          renderTable(list);
-        },
-        (err) => {
-          console.error("Realtime error:", err);
-          showMsg("Realtime error: " + (err.message || err.code || err), "error");
-        }
-      );
+      participantsRef.onSnapshot(snapshot=>{
+        const list=[]; snapshot.forEach(doc=>list.push({name:doc.id,...doc.data()}));
+        latestData=list; renderTable(list);
+      }, err=>{ console.error("Realtime error:",err); showMsg("Realtime error: "+(err.message||err),"error"); });
 
-      /* ===================== CSV export ===================== */
-      document.getElementById("exportBtn").addEventListener("click", () => {
-        if (!latestData.length) { showMsg("No data to export.", "error"); return; }
-
-        let csv = "Name,Start,Current,Goal,Change,% to Goal\n";
-        latestData.forEach((p) => {
-          const { change, percentToGoal } = calcProgress(p.start, p.current, p.goal);
-          csv += `${p.name},${p.start ?? ""},${p.current ?? ""},${p.goal ?? ""},${change},${percentToGoal}%\n`;
+      document.getElementById("exportBtn").addEventListener("click", ()=>{
+        if(!latestData.length){ showMsg("No data to export.","error"); return; }
+        let csv="Name,Start,Current,Goal,Lost,% to Goal\n";
+        latestData.forEach(p=>{
+          const lost=(p.start??0)-(p.current??0);
+          const totalToGoal=(p.start??0)-(p.goal??0);
+          const pct=totalToGoal>0?((lost/totalToGoal)*100).toFixed(1):"0.0";
+          csv+=`${p.name},${p.start??""},${p.current??""},${p.goal??""},${lost},${pct}%\n`;
         });
-
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url; a.download = "fitness-challenge.csv"; a.click();
-        URL.revokeObjectURL(url);
-        showMsg("CSV exported!", "success");
+        const blob=new Blob([csv],{type:"text/csv"});
+        const url=URL.createObjectURL(blob); const a=document.createElement("a");
+        a.href=url; a.download="fitness-challenge.csv"; a.click(); URL.revokeObjectURL(url);
+        showMsg("CSV exported!","success");
       });
     </script>
   </body>
