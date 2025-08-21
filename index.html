@@ -35,7 +35,8 @@
       button.primary{background:var(--accent);border-color:#16a34a;color:#041207;font-weight:600}
 
       /* ===== Clean / professional table styling ===== */
-      table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.9rem}
+      .table-container{margin-top:16px}
+      table{width:100%;border-collapse:collapse;font-size:.9rem}
       thead{background:#1e293b;color:#e5e7eb;text-transform:uppercase;letter-spacing:.5px}
       thead th{padding:12px 10px;border-bottom:2px solid #334155}
       th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:8px;vertical-align:middle}
@@ -61,10 +62,20 @@
       .note{font-size:.8rem;color:var(--muted);margin-top:10px}
       .error{color:#fca5a5}.success{color:#86efac}
 
-      /* Mobile: hide less important columns (Goal, % to Goal) */
-      @media (max-width:480px){
-        td:nth-child(5),th:nth-child(5),
-        td:nth-child(7),th:nth-child(7){display:none}
+      /* ===== Mobile enhancements ===== */
+      @media (max-width:600px){
+        .table-container{
+          overflow-x:auto; display:block; -webkit-overflow-scrolling:touch;
+          border-radius:8px;
+        }
+        table{min-width:640px;} /* allow scrolling instead of squishing */
+        table, thead, tbody, th, td, tr{font-size:14px}
+        th,td{padding:6px}
+        img.avatar{width:32px;height:32px;border-radius:6px}
+        .actions button{width:100%}
+        /* Keep your earlier mobile hide rule if you like; optional now because of scroll */
+        /* td:nth-child(5),th:nth-child(5),
+           td:nth-child(7),th:nth-child(7){display:none} */
       }
     </style>
   </head>
@@ -93,20 +104,22 @@
 
         <p id="msg" class="note"></p>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Photo</th>
-              <th>Name</th>
-              <th>Start</th>
-              <th>Current</th>
-              <th>Goal</th>
-              <th>Change</th><!-- was: Lost -->
-              <th>% to Goal</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Start</th>
+                <th>Current</th>
+                <th>Goal</th>
+                <th>Change</th><!-- was: Lost -->
+                <th>% to Goal</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
 
         <p class="note">
           Tip: Use short names and small photos. Images are stored as text (Base64) in Firestore; each document should stay under ~1 MB.
